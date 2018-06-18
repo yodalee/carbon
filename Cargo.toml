@@ -1,0 +1,9 @@
+[package]
+name = "carbon"
+version = "0.1.0"
+authors = ["yodalee <lc85301@gmail.com>"]
+
+[dependencies]
+pest = "^2.1"
+pest_derive = "^2.1"
+lazy_static = "1.0.0"
