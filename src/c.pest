@@ -1,0 +1,62 @@
+WHITESPACE = _{ " " | "\n" }
+
+// symbol
+
+lbracket = _{ "[" | "<:" }
+rbracket = _{ "]" | ":>" }
+lparen   = _{ "(" }
+rparen   = _{ ")" }
+lbrace   = _{ "{" | "<%" }
+rbrace   = _{ "}" | "%>" }
+
+op_add         = { "+" }
+op_sub         = { "-" }
+op_mul         = { "*" }
+op_div         = { "/" }
+op_mod         = { "%" }
+op_lsh         = { "<<" }
+op_rsh         = { ">>" }
+op_gt          = { ">" }
+op_lt          = { "<" }
+op_ge          = { ">=" }
+op_le          = { "<=" }
+op_eq          = { "==" }
+op_ne          = { "!=" }
+op_and         = { "&&" }
+op_or          = { "||" }
+op_band        = { "&" }
+op_bor         = { "|" }
+op_bxor        = { "^" }
+op_assign      = { "=" }
+op_assign_add  = { "+=" }
+op_assign_sub  = { "-=" }
+op_assign_mul  = { "*=" }
+op_assign_div  = { "/=" }
+op_assign_mod  = { "%=" }
+op_assign_lsh  = { "<<=" }
+op_assign_rsh  = { ">>=" }
+op_assign_band = { "&=" }
+op_assign_bor  = { "|=" }
+op_assign_bxor = { "^=" }
+op_comma       = { "," }
+op_dot         = { "." }
+op_arrow       = { "->" }
+op_incr        = { "++" }
+op_decr        = { "--" }
+
+alpha_ = { ASCII_ALPHA | "_" }
+alphanum_ = { ASCII_ALPHANUMERIC | "_" }
+identifier = @{ alpha_ ~ alphanum_* }
+
+// C program
+jump_stat = { "return" ~ ";" }
+compound_stat = _{ lbrace ~ block_item* ~ rbrace }
+statement = { compound_stat | jump_stat }
+block_item = _{ statement }
+
+type_decl = { "int" | "float" } // TODO, generic type declaration
+param_list = { lparen ~ rparen } // TODO, with content
+function_decl = { type_decl ~ identifier ~ param_list ~ compound_stat }
+
+// C program
+program = { SOI ~ function_decl* ~ EOI }
