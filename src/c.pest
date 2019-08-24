@@ -1,4 +1,7 @@
 WHITESPACE = _{ " " | "\n" }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" | "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+alpha_ = { ASCII_ALPHA | "_" }
+alphanum_ = { ASCII_ALPHANUMERIC | "_" }
 
 // symbol
 
@@ -43,20 +46,68 @@ op_dot         = { "." }
 op_arrow       = { "->" }
 op_incr        = { "++" }
 op_decr        = { "--" }
+op_qmark       = { "?" }
+op_colon       = { ":" }
 
-alpha_ = { ASCII_ALPHA | "_" }
-alphanum_ = { ASCII_ALPHANUMERIC | "_" }
+opset_binary   = { op_add | op_sub | op_mul | op_div | op_mod | op_lsh |
+  op_rsh | op_gt | op_lt | op_ge | op_le | op_eq | op_ne | op_and | op_or |
+  op_band | op_bor | op_bxor }
+opset_assign   = {
+  op_assign | op_assign_add | op_assign_sub | op_assign_mul | op_assign_div |
+  op_assign_mod | op_assign_lsh | op_assign_rsh | op_assign_band |
+  op_assign_bor | op_assign_bxor }
+
+// token
 identifier = @{ alpha_ ~ alphanum_* }
 
-// C program
-jump_stat = { "return" ~ ";" }
-compound_stat = _{ lbrace ~ block_item* ~ rbrace }
-statement = { compound_stat | jump_stat }
-block_item = _{ statement }
+decimal_constant = @{ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+octal_constant = @{ "0" ~ ASCII_OCT_DIGIT* }
+hexadecimal_constant = @{ ("0x" | "0X") ~ ASCII_HEX_DIGIT+ }
+integer_constant = { (decimal_constant | octal_constant | hexadecimal_constant) } // TODO 6.4.4.1 suffix
+
+constant = { (integer_constant) }
+
+string_lit = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+
+// expression
+
+primary_expr = { identifier | constant | string_lit | ("(" ~ expression ~ ")") } // TODO 6.5.1.1 generic
+postfix_expr = { primary_expr }
+unary_expr   = { postfix_expr }
+cast_expr    = { unary_expr }
+logicalOR_expr = _{ unary_expr ~ (opset_binary ~ unary_expr)* }
+conditional_expr = _{ logicalOR_expr ~ ( op_qmark ~ silent_expression ~ op_colon ~ conditional_expr)? }
+assignment_expr = _{ (unary_expr ~ opset_assign)* ~ conditional_expr }
+silent_expression = _{ assignment_expr ~ (op_comma ~ assignment_expr)* }
+expression = { assignment_expr ~ (op_comma ~ assignment_expr)* }
+
+
+// statement
+compound_stat   = { lbrace ~ block* ~ rbrace }
+expression_stat = { expression? ~ ";" }
+
+if_stat         = { ("if" ~ lparen ~ expression ~ rparen ~ statement ~ "else" ~ statement) |
+                    ("if" ~ lparen ~ expression ~ rparen ~ statement) }
+switch_stat     = { "switch" ~ lparen ~ expression ~ rparen ~ statement }
+selection_stat  = _{ if_stat | switch_stat }
+
+return_stat     = { "return" ~ expression? ~ ";"  }
+break_stat      = { "break" ~ ";" }
+cont_stat       = { "continue" ~ ";" }
+jump_stat       = { return_stat | break_stat | cont_stat }
+
+statement    = { compound_stat | expression_stat | selection_stat | jump_stat }
+
+block = { (statement | declaration)+ }
+
+// declaration
+
+declaration = { type_decl ~ identifier ~ ("=" ~ expression)? ~ ";" }
 
 type_decl = { "int" | "float" } // TODO, generic type declaration
 param_list = { lparen ~ rparen } // TODO, with content
 function_decl = { type_decl ~ identifier ~ param_list ~ compound_stat }
 
 // C program
+
 program = { SOI ~ function_decl* ~ EOI }
