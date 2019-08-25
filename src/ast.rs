@@ -26,15 +26,19 @@ pub enum CastDecl {
     VarDecl(String, CType, Option<CastStmt>)
 }
 
-pub enum CastExpr {
+#[derive(Debug)]
+pub enum CastBinaryOperator {
+    ADD, SUB, MUL, DIV, MOD,
+    LE, GE, LT, GT, NE, EQ,
+    LSH, RSH,
+    AND, OR, BAND, BOR, BXOR
 }
 
 #[derive(Debug)]
-pub enum CastOperator {
-    Add, Sub, Mul, Div, Negate,
-    LT, GT, LEQ, GEQ, EQ, NEQ,
-    AND, OR, Not, BAND, BOR,
-    BXOR, BNOT
+pub enum CastLiteral {
+    IntLiteral(u64),
+    FloatLiteral(f64),
+    StringLiteral(String),
 }
 
 #[derive(Debug)]
@@ -43,7 +47,8 @@ pub enum CastStmt {
     Compound(Vec<CastStmt>),
     Return(Option<Box<CastStmt>>),
     Identifier(String),
-    Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
+    Literal(CastLiteral),
+    Expression(CastBinaryOperator, Box<CastStmt>, Box<CastStmt>),
     If(Box<CastStmt>, Box<CastStmt>, Box<CastStmt>),
     None
 }
