@@ -39,8 +39,9 @@ fn build_function(pair: Pair<Rule>) -> FuncDecl {
     let mut inner = pair.into_inner();
     let rettype = build_type(inner.next().unwrap());
     let name = inner.next().unwrap().as_str();
+    inner.next().unwrap();
     let args = HashMap::new();
-    let body = CastStmt::None;
+    let body = build_statement(inner.next().unwrap());
     FuncDecl::new(name, args, body, rettype)
 }
 
@@ -51,6 +52,36 @@ fn build_type(pair: Pair<Rule>) -> CType {
         "float" => CType::Float,
         &_ => panic!(format!("Unknown Type {}", typename)),
     }
+}
+
+fn build_statement(pair: Pair<Rule>) -> CastStmt {
+    match pair.as_rule() {
+        Rule::compound_stat => {
+            CastStmt::Compound(pair.into_inner().map(|pair| build_block(pair)).collect())
+        }
+        _ => parse_fail!(pair),
+    }
+}
+
+fn build_block(pair: Pair<Rule>) -> CastStmt {
+    let mut decls = vec![];
+    let mut stmts = vec![];
+    for pair in pair.into_inner() {
+        match pair.as_rule() {
+            Rule::declaration => decls.push(build_declaration(pair)),
+            Rule::statement   => stmts.push(build_statement(pair)),
+            _ => parse_fail!(pair),
+        }
+    }
+    CastStmt::Block(stmts, decls)
+}
+
+fn build_declaration(pair: Pair<Rule>) -> CastDecl {
+    let mut inner = pair.into_inner();
+    let typ  = build_type(inner.next().unwrap());
+    let id   = inner.next().unwrap().as_str();
+    let expr = None;
+    CastDecl::VarDecl(id.to_string(), typ, expr)
 }
 
 #[cfg(test)]
