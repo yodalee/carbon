@@ -72,8 +72,8 @@ string_lit = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 // expression
 
 primary_expr = { identifier | constant | string_lit | ("(" ~ expression ~ ")") } // TODO 6.5.1.1 generic
-postfix_expr = { primary_expr }
-unary_expr   = { postfix_expr }
+postfix_expr = _{ primary_expr }
+unary_expr   = _{ postfix_expr }
 cast_expr    = { unary_expr }
 logicalOR_expr = _{ unary_expr ~ (opset_binary ~ unary_expr)* }
 conditional_expr = _{ logicalOR_expr ~ ( op_qmark ~ silent_expression ~ op_colon ~ conditional_expr)? }

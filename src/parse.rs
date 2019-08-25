@@ -6,6 +6,7 @@ use pest::iterators::{Pair};
 use super::helper::{iterate_rules};
 use super::grammar::{CParser, Rule};
 use super::ast::*;
+use super::climb::climb;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -59,6 +60,7 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
         Rule::compound_stat => {
             CastStmt::Compound(pair.into_inner().map(|pair| build_block(pair)).collect())
         }
+        Rule::expression_stat => climb(pair),
         _ => parse_fail!(pair),
     }
 }
@@ -80,8 +82,31 @@ fn build_declaration(pair: Pair<Rule>) -> CastDecl {
     let mut inner = pair.into_inner();
     let typ  = build_type(inner.next().unwrap());
     let id   = inner.next().unwrap().as_str();
-    let expr = None;
+    let expr = match inner.next() {
+        Some(expr) => Some(climb(expr)),
+        None => None,
+    };
     CastDecl::VarDecl(id.to_string(), typ, expr)
+}
+
+pub fn build_primary(pair: Pair<Rule>) -> CastStmt {
+    let pair = pair.into_inner().next().unwrap();
+    match pair.as_rule() {
+        Rule::identifier => CastStmt::Identifier(pair.as_str().to_string()),
+        Rule::constant   => CastStmt::Literal(build_constant(pair)),
+        Rule::string_lit => CastStmt::Literal(build_constant(pair)),
+        Rule::expression => climb(pair),
+        _ => parse_fail!(pair),
+    }
+}
+
+fn build_constant(pair: Pair<Rule>) -> CastLiteral {
+    let pair = pair.into_inner().next().unwrap();
+    match pair.as_rule() {
+        Rule::integer_constant => CastLiteral::IntLiteral(pair.as_str().parse::<u64>().unwrap()),
+        Rule::string_lit => CastLiteral::StringLiteral(pair.as_str().to_string()),
+        _ => parse_fail!(pair),
+    }
 }
 
 #[cfg(test)]
