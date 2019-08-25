@@ -7,6 +7,7 @@ use pest::iterators::{Pair};
 use carbon::helper::{iterate_rules};
 use carbon::grammar::{CParser, Rule};
 use carbon::ast::*;
+use carbon::parse_fail;
 
 use std::env;
 use std::fs::File;

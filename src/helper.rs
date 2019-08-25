@@ -9,3 +9,15 @@ pub fn iterate_rules(pair: Pair<Rule>, indent: usize) {
         iterate_rules(innerpair, indent+2);
     }
 }
+
+#[macro_export]
+macro_rules! parse_fail {
+  ( $x:expr ) => {
+    {
+      let rule = $x.as_rule();
+      let s = $x.as_str();
+      unreachable!("unexpected rule {:?} with content {}", rule, s)
+    }
+  }
+}
+

@@ -3,6 +3,7 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-pub mod grammar;
+#[macro_use]
 pub mod helper;
+pub mod grammar;
 pub mod ast;
