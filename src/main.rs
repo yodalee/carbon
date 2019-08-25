@@ -2,13 +2,17 @@ extern crate pest;
 extern crate carbon;
 
 use pest::Parser;
+use pest::iterators::{Pair};
 
 use carbon::helper::{iterate_rules};
 use carbon::grammar::{CParser, Rule};
+use carbon::ast::*;
+
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::process;
+use std::collections::HashMap;
 
 fn main() {
     let args : Vec<_> = env::args().collect();
@@ -33,6 +37,33 @@ fn parse_program_text(content: &str) {
                     .unwrap_or_else(|e| panic!("{}", e))
                     .next().unwrap();
     iterate_rules(pairs.clone(), 0);
+    let cast = build_program(pairs);
+}
+
+fn build_program(pair: Pair<Rule>) -> CastTop {
+    let funcdels = pair.into_inner()
+                       .filter(|pair| pair.as_rule() == Rule::function_decl)
+                       .map(build_function)
+                       .collect();
+    CastTop::FuncDeclList(funcdels)
+}
+
+fn build_function(pair: Pair<Rule>) -> FuncDecl {
+    let mut inner = pair.into_inner();
+    let rettype = build_type(inner.next().unwrap());
+    let name = inner.next().unwrap().as_str();
+    let args = HashMap::new();
+    let body = CastStmt::None;
+    FuncDecl::new(name, args, body, rettype)
+}
+
+fn build_type(pair: Pair<Rule>) -> CType {
+    let typename = pair.as_str();
+    match typename.as_ref() {
+        "int" => CType::Int,
+        "float" => CType::Float,
+        &_ => panic!(format!("Unknown Type {}", typename)),
+    }
 }
 
 #[cfg(test)]
