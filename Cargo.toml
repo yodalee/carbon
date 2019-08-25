@@ -7,3 +7,7 @@ authors = ["yodalee <lc85301@gmail.com>"]
 pest = "^2.1"
 pest_derive = "^2.1"
 lazy_static = "1.0.0"
+
+[[bin]]
+name = "cparser"
+path = "bin/parser.rs"

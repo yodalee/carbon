@@ -1,44 +1,30 @@
 extern crate pest;
-extern crate carbon;
 
 use pest::Parser;
 use pest::iterators::{Pair};
 
-use carbon::helper::{iterate_rules};
-use carbon::grammar::{CParser, Rule};
-use carbon::ast::*;
-use carbon::parse_fail;
+use super::helper::{iterate_rules};
+use super::grammar::{CParser, Rule};
+use super::ast::*;
 
-use std::env;
 use std::fs::File;
 use std::io::prelude::*;
-use std::process;
 use std::collections::HashMap;
 
-fn main() {
-    let args : Vec<_> = env::args().collect();
-    if args.len() == 0 {
-        eprintln!("Usage: carbon <file> ...");
-        process::exit(1);
-    }
-    for arg in args.iter().skip(1) {
-        parse_program_file(&arg)
-    }
-}
-
-fn parse_program_file(path: &str) {
+pub fn parse_program_file(path: &str) {
     let mut f = File::open(path).expect(&format!("file {} not found", path));
     let mut content = String::new();
     f.read_to_string(&mut content).expect(&format!("Error in reading file {}", path));
-    parse_program_text(&content);
+    let ast = parse_program_text(&content);
+    println!("{:?}", ast);
 }
 
-fn parse_program_text(content: &str) {
+fn parse_program_text(content: &str) -> CastTop {
     let pairs = CParser::parse(Rule::program, content)
                     .unwrap_or_else(|e| panic!("{}", e))
                     .next().unwrap();
     iterate_rules(pairs.clone(), 0);
-    let cast = build_program(pairs);
+    build_program(pairs)
 }
 
 fn build_program(pair: Pair<Rule>) -> CastTop {
