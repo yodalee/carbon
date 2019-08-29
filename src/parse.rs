@@ -42,7 +42,7 @@ fn build_function(pair: Pair<Rule>) -> FuncDecl {
     let name = inner.next().unwrap().as_str();
     inner.next().unwrap();
     let args = HashMap::new();
-    let body = build_statement(inner.next().unwrap());
+    let body = build_compound_statement(inner.next().unwrap());
     FuncDecl::new(name, args, body, rettype)
 }
 
@@ -56,13 +56,21 @@ fn build_type(pair: Pair<Rule>) -> CType {
 }
 
 fn build_statement(pair: Pair<Rule>) -> CastStmt {
+    let pair = pair.into_inner().next().unwrap();
     match pair.as_rule() {
-        Rule::compound_stat => {
-            CastStmt::Compound(pair.into_inner().map(|pair| build_block(pair)).collect())
-        }
-        Rule::expression_stat => climb(pair),
+        Rule::compound_stat => build_compound_statement(pair),
+        Rule::expression_stat => {
+            match pair.into_inner().next() {
+                Some(expr) => climb(expr),
+                None => CastStmt::None,
+            }
+        },
         _ => parse_fail!(pair),
     }
+}
+
+fn build_compound_statement(pair: Pair<Rule>) -> CastStmt {
+    CastStmt::Compound(pair.into_inner().map(|pair| build_block(pair)).collect())
 }
 
 fn build_block(pair: Pair<Rule>) -> CastStmt {

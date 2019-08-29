@@ -27,7 +27,11 @@ pub enum CastDecl {
 }
 
 #[derive(Debug)]
-pub enum CastBinaryOperator {
+pub enum CastOperator {
+    COMMA,
+    ASSIGN, ASSIGNADD, ASSIGNSUB, ASSIGNMUL, ASSIGNDIV,
+    ASSIGNMOD, ASSIGNLSH, ASSIGNRSH, ASSIGNBAND,
+    ASSIGNBOR, ASSIGNBXOR,
     ADD, SUB, MUL, DIV, MOD,
     LE, GE, LT, GT, NE, EQ,
     LSH, RSH,
@@ -48,7 +52,7 @@ pub enum CastStmt {
     Return(Option<Box<CastStmt>>),
     Identifier(String),
     Literal(CastLiteral),
-    Expression(CastBinaryOperator, Box<CastStmt>, Box<CastStmt>),
+    Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
     If(Box<CastStmt>, Box<CastStmt>, Box<CastStmt>),
     None
 }

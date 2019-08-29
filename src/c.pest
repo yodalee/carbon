@@ -49,10 +49,10 @@ op_decr        = { "--" }
 op_qmark       = { "?" }
 op_colon       = { ":" }
 
-opset_binary   = { op_add | op_sub | op_mul | op_div | op_mod | op_lsh |
+opset_binary   = _{ op_add | op_sub | op_mul | op_div | op_mod | op_lsh |
   op_rsh | op_gt | op_lt | op_ge | op_le | op_eq | op_ne | op_and | op_or |
   op_band | op_bor | op_bxor }
-opset_assign   = {
+opset_assign   = _{
   op_assign | op_assign_add | op_assign_sub | op_assign_mul | op_assign_div |
   op_assign_mod | op_assign_lsh | op_assign_rsh | op_assign_band |
   op_assign_bor | op_assign_bxor }
@@ -71,16 +71,21 @@ string_lit = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 
 // expression
 
-primary_expr = { identifier | constant | string_lit | ("(" ~ expression ~ ")") } // TODO 6.5.1.1 generic
-postfix_expr = _{ primary_expr }
-unary_expr   = _{ postfix_expr }
-cast_expr    = { unary_expr }
-logicalOR_expr = _{ unary_expr ~ (opset_binary ~ unary_expr)* }
-conditional_expr = _{ logicalOR_expr ~ ( op_qmark ~ silent_expression ~ op_colon ~ conditional_expr)? }
-assignment_expr = _{ (unary_expr ~ opset_assign)* ~ conditional_expr }
-silent_expression = _{ assignment_expr ~ (op_comma ~ assignment_expr)* }
-expression = { assignment_expr ~ (op_comma ~ assignment_expr)* }
+primary_expr      = { identifier | constant | string_lit | ("(" ~ expression ~ ")") } // TODO 6.5.1.1 generic
+postfix_expr      = _{ primary_expr }
+unary_expr        = _{ postfix_expr }
+cast_expr         = { unary_expr }
 
+_logicalOR_expr   = _{ unary_expr ~ (opset_binary ~ unary_expr)* }
+logicalOR_expr    = { _logicalOR_expr }
+_conditional_expr = _{ _logicalOR_expr ~ ( op_qmark ~ _expression ~ op_colon ~ _conditional_expr)? }
+conditional_expr  = { _conditional_expr }
+_assignment_expr  = _{ (unary_expr ~ opset_assign)* ~ _conditional_expr }
+assignment_expr   = { _assignment_expr }
+_expression       = _{ _assignment_expr ~ (op_comma ~ _assignment_expr)* }
+expression        = { _expression }
+
+constant_expr     = _{ conditional_expr }
 
 // statement
 compound_stat   = { lbrace ~ block* ~ rbrace }
