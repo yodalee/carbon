@@ -59,12 +59,6 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
     let pair = pair.into_inner().next().unwrap();
     match pair.as_rule() {
         Rule::compound_stat => build_compound_statement(pair),
-        Rule::expression_stat => {
-            match pair.into_inner().next() {
-                Some(expr) => climb(expr),
-                None => CastStmt::None,
-            }
-        },
         Rule::if_stat => {
             let mut inner = pair.into_inner();
             let condition = Box::new(climb(inner.next().unwrap()));
@@ -75,6 +69,18 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
             };
             CastStmt::If(condition, ifcode, elsecode)
         }
+        Rule::while_stat => {
+            let mut inner = pair.into_inner();
+            let whilecond = climb(inner.next().unwrap());
+            let whilecode = build_statement(inner.next().unwrap());
+            CastStmt::new_while(whilecond, whilecode)
+        }
+        Rule::do_stat => {
+            let mut inner = pair.into_inner();
+            let docode = build_statement(inner.next().unwrap());
+            let docond = climb(inner.next().unwrap());
+            CastStmt::new_do(docond, docode)
+        }
         Rule::return_stat => {
             let expr = match pair.into_inner().next() {
                 Some(expr) => Some(Box::new(climb(expr))),
@@ -84,6 +90,12 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
         }
         Rule::break_stat => CastStmt::Break,
         Rule::cont_stat => CastStmt::Continue,
+        Rule::expression_stat => {
+            match pair.into_inner().next() {
+                Some(expr) => climb(expr),
+                None => CastStmt::None,
+            }
+        },
         _ => parse_fail!(pair),
     }
 }

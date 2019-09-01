@@ -53,12 +53,46 @@ pub enum CastStmt {
     Literal(CastLiteral),
     Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
     If(Box<CastStmt>, Box<CastStmt>, Option<Box<CastStmt>>),
+    While { whileCond: Box<CastStmt>, whileCode: Box<CastStmt> },
+    Do    { doCode: Box<CastStmt>, doCond: Box<CastStmt> },
+    For { forInit: Box<CastStmt>,
+          forCond: Box<CastStmt>,
+          forIter: Box<CastStmt>,
+          forCode: Box<CastStmt> },
     Call(Box<CastStmt>, Vec<CastStmt>),     // foo(a1, a2, ...)
     ArrayRef(Box<CastStmt>, Box<CastStmt>), // ArrayRef (Identifier("a")) (Literal(IntLiteral(10)))
     Return(Option<Box<CastStmt>>),
     Break,
     Continue,
     None
+}
+
+impl CastStmt {
+    pub fn new_for(forInit: CastStmt,
+               forCond: CastStmt,
+               forIter: CastStmt,
+               forCode: CastStmt) -> CastStmt {
+        CastStmt::For {
+            forInit: Box::new(forInit),
+            forCond: Box::new(forCond),
+            forIter: Box::new(forIter),
+            forCode: Box::new(forCode)
+        }
+    }
+    pub fn new_while(whileCond: CastStmt,
+                     whileCode: CastStmt) -> CastStmt {
+        CastStmt::While {
+            whileCond: Box::new(whileCond),
+            whileCode: Box::new(whileCode)
+        }
+    }
+    pub fn new_do(doCode: CastStmt,
+                  doCond: CastStmt) -> CastStmt {
+        CastStmt::Do {
+            doCode: Box::new(doCode),
+            doCond: Box::new(doCond)
+        }
+    }
 }
 
 #[derive(Debug)]

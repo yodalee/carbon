@@ -100,12 +100,16 @@ if_stat         = { ("if" ~ lparen ~ expression ~ rparen ~ statement ~ "else" ~ 
 switch_stat     = { "switch" ~ lparen ~ expression ~ rparen ~ statement }
 selection_stat  = _{ if_stat | switch_stat }
 
+while_stat      = { "while" ~ lparen ~ expression ~ rparen ~ statement }
+do_stat         = { "do" ~ statement ~ "while" ~ lparen ~ expression ~ rparen ~ ";" }
+iteration_stat  = _{ while_stat | do_stat }
+
 return_stat     = { "return" ~ expression? ~ ";"  }
 break_stat      = { "break" ~ ";" }
 cont_stat       = { "continue" ~ ";" }
 jump_stat       = _{ return_stat | break_stat | cont_stat }
 
-statement    = { compound_stat | selection_stat | jump_stat | expression_stat }
+statement    = { compound_stat | selection_stat | iteration_stat | jump_stat | expression_stat }
 
 block = { (statement | declaration)+ }
 
