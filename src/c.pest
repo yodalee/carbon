@@ -60,12 +60,12 @@ opset_assign   = _{
 // token
 identifier = @{ alpha_ ~ alphanum_* }
 
-decimal_constant = @{ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
-octal_constant = @{ "0" ~ ASCII_OCT_DIGIT* }
-hexadecimal_constant = @{ ("0x" | "0X") ~ ASCII_HEX_DIGIT+ }
-integer_constant = { (decimal_constant | octal_constant | hexadecimal_constant) } // TODO 6.4.4.1 suffix
+decimal_constant = { ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+octal_constant = { "0" ~ ASCII_OCT_DIGIT* }
+hexadecimal_constant = { ASCII_HEX_DIGIT+ }
+integer_constant = ${ (("0x" | "0X") ~ hexadecimal_constant | octal_constant | decimal_constant) } // TODO 6.4.4.1 suffix
 
-constant = { (integer_constant) }
+constant = { integer_constant }
 
 string_lit = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 

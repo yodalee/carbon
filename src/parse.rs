@@ -111,10 +111,23 @@ pub fn build_primary(pair: Pair<Rule>) -> CastStmt {
 fn build_constant(pair: Pair<Rule>) -> CastLiteral {
     let pair = pair.into_inner().next().unwrap();
     match pair.as_rule() {
-        Rule::integer_constant => CastLiteral::IntLiteral(pair.as_str().parse::<u64>().unwrap()),
+        Rule::integer_constant => build_integer(pair),
         Rule::string_lit => CastLiteral::StringLiteral(pair.as_str().to_string()),
         _ => parse_fail!(pair),
     }
+}
+
+fn build_integer(pair: Pair<Rule>) -> CastLiteral {
+    let pair = pair.into_inner().next().unwrap();
+    let radix = match pair.as_rule() {
+        Rule::octal_constant => 8,
+        Rule::decimal_constant => 10,
+        Rule::hexadecimal_constant => 16,
+        _ => parse_fail!(pair),
+    };
+    let s = pair.as_str();
+    CastLiteral::IntLiteral(u64::from_str_radix(s, radix)
+                                .expect(&format!("Parse integere failed on string {} with radix {}", s, radix)))
 }
 
 #[cfg(test)]
