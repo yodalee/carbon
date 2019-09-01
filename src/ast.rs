@@ -54,6 +54,8 @@ pub enum CastStmt {
     Literal(CastLiteral),
     Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
     If(Box<CastStmt>, Box<CastStmt>, Box<CastStmt>),
+    Call(Box<CastStmt>, Vec<CastStmt>),     // foo(a1, a2, ...)
+    ArrayRef(Box<CastStmt>, Box<CastStmt>), // ArrayRef (Identifier("a")) (Literal(IntLiteral(10)))
     None
 }
 

@@ -3,7 +3,7 @@ use pest::iterators::{Pair};
 use super::grammar::{Rule};
 
 use super::ast::*;
-use super::parse::{build_primary};
+use super::parse::{build_postfix};
 
 fn infix_rule(lhs: CastStmt, pair: Pair<Rule>, rhs: CastStmt) -> CastStmt {
     match pair.as_rule() {
@@ -80,5 +80,5 @@ lazy_static! [
 ];
 
 pub fn climb(pair: Pair<Rule>) -> CastStmt {
-    PREC_CLIMBER.climb(pair.into_inner(), build_primary, infix_rule)
+    PREC_CLIMBER.climb(pair.into_inner(), build_postfix, infix_rule)
 }

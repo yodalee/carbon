@@ -97,7 +97,25 @@ fn build_declaration(pair: Pair<Rule>) -> CastDecl {
     CastDecl::VarDecl(id.to_string(), typ, expr)
 }
 
-pub fn build_primary(pair: Pair<Rule>) -> CastStmt {
+pub fn helper_fold_postfix(primary: CastStmt, pair: Pair<Rule>) -> CastStmt {
+    let pair = pair.into_inner().next().unwrap();
+    match pair.as_rule() {
+        Rule::postfix_array => {
+            let expr = pair.into_inner().next().unwrap();
+            CastStmt::ArrayRef(Box::new(primary), Box::new(climb(expr)))
+        }
+        Rule::postfix_call => CastStmt::Call(Box::new(primary), Vec::new()),
+        _ => parse_fail!(pair),
+    }
+}
+
+pub fn build_postfix(pair: Pair<Rule>) -> CastStmt {
+    let mut inner = pair.into_inner();
+    let primary = build_primary_expr(inner.next().unwrap());
+    inner.fold(primary, |primary, postfix| helper_fold_postfix(primary, postfix))
+}
+
+pub fn build_primary_expr(pair: Pair<Rule>) -> CastStmt {
     let pair = pair.into_inner().next().unwrap();
     match pair.as_rule() {
         Rule::identifier => CastStmt::Identifier(pair.as_str().to_string()),

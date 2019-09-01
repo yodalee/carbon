@@ -72,7 +72,11 @@ string_lit = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
 // expression
 
 primary_expr      = { identifier | constant | string_lit | ("(" ~ expression ~ ")") } // TODO 6.5.1.1 generic
-postfix_expr      = _{ primary_expr }
+arg_expr_list     = { assignment_expr ~ ("," ~ assignment_expr)* }
+postfix_call    = { lparen ~ rparen }
+postfix_array   = { lbracket ~ expression ~ rbracket }
+postfix           = { (postfix_call | postfix_array) }
+postfix_expr      = { primary_expr ~ postfix* }
 unary_expr        = _{ postfix_expr }
 cast_expr         = { unary_expr }
 
