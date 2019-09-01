@@ -65,6 +65,25 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
                 None => CastStmt::None,
             }
         },
+        Rule::if_stat => {
+            let mut inner = pair.into_inner();
+            let condition = Box::new(climb(inner.next().unwrap()));
+            let ifcode = Box::new(build_statement(inner.next().unwrap()));
+            let elsecode = match inner.next() {
+                Some(stmt) => Some(Box::new(build_statement(stmt))),
+                None => None,
+            };
+            CastStmt::If(condition, ifcode, elsecode)
+        }
+        Rule::return_stat => {
+            let expr = match pair.into_inner().next() {
+                Some(expr) => Some(Box::new(climb(expr))),
+                None => None
+            };
+            CastStmt::Return(expr)
+        }
+        Rule::break_stat => CastStmt::Break,
+        Rule::cont_stat => CastStmt::Continue,
         _ => parse_fail!(pair),
     }
 }

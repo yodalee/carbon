@@ -49,13 +49,15 @@ pub enum CastLiteral {
 pub enum CastStmt {
     Block(Vec<CastStmt>, Vec<CastDecl>),
     Compound(Vec<CastStmt>),
-    Return(Option<Box<CastStmt>>),
     Identifier(String),
     Literal(CastLiteral),
     Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
-    If(Box<CastStmt>, Box<CastStmt>, Box<CastStmt>),
+    If(Box<CastStmt>, Box<CastStmt>, Option<Box<CastStmt>>),
     Call(Box<CastStmt>, Vec<CastStmt>),     // foo(a1, a2, ...)
     ArrayRef(Box<CastStmt>, Box<CastStmt>), // ArrayRef (Identifier("a")) (Literal(IntLiteral(10)))
+    Return(Option<Box<CastStmt>>),
+    Break,
+    Continue,
     None
 }
 

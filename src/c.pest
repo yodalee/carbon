@@ -103,9 +103,9 @@ selection_stat  = _{ if_stat | switch_stat }
 return_stat     = { "return" ~ expression? ~ ";"  }
 break_stat      = { "break" ~ ";" }
 cont_stat       = { "continue" ~ ";" }
-jump_stat       = { return_stat | break_stat | cont_stat }
+jump_stat       = _{ return_stat | break_stat | cont_stat }
 
-statement    = { compound_stat | expression_stat | selection_stat | jump_stat }
+statement    = { compound_stat | selection_stat | jump_stat | expression_stat }
 
 block = { (statement | declaration)+ }
 
