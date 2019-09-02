@@ -52,7 +52,7 @@ pub enum CastStmt {
     Identifier(String),
     Literal(CastLiteral),
     Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
-    If(Box<CastStmt>, Box<CastStmt>, Option<Box<CastStmt>>),
+    If(Box<CastStmt>, Box<CastStmt>, Box<Option<CastStmt>>),
     While { whileCond: Box<CastStmt>, whileCode: Box<CastStmt> },
     Do    { doCode: Box<CastStmt>, doCond: Box<CastStmt> },
     For { forInit: Box<CastStmt>,
@@ -61,7 +61,7 @@ pub enum CastStmt {
           forCode: Box<CastStmt> },
     Call(Box<CastStmt>, Vec<CastStmt>),     // foo(a1, a2, ...)
     ArrayRef(Box<CastStmt>, Box<CastStmt>), // ArrayRef (Identifier("a")) (Literal(IntLiteral(10)))
-    Return(Option<Box<CastStmt>>),
+    Return(Box<Option<CastStmt>>),
     Break,
     Continue,
     None

@@ -63,10 +63,10 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
             let mut inner = pair.into_inner();
             let condition = Box::new(climb(inner.next().unwrap()));
             let ifcode = Box::new(build_statement(inner.next().unwrap()));
-            let elsecode = match inner.next() {
-                Some(stmt) => Some(Box::new(build_statement(stmt))),
+            let elsecode = Box::new(match inner.next() {
+                Some(stmt) => Some(build_statement(stmt)),
                 None => None,
-            };
+            });
             CastStmt::If(condition, ifcode, elsecode)
         }
         Rule::while_stat => {
@@ -82,10 +82,10 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
             CastStmt::new_do(docond, docode)
         }
         Rule::return_stat => {
-            let expr = match pair.into_inner().next() {
-                Some(expr) => Some(Box::new(climb(expr))),
+            let expr = Box::new(match pair.into_inner().next() {
+                Some(expr) => Some(climb(expr)),
                 None => None
-            };
+            });
             CastStmt::Return(expr)
         }
         Rule::break_stat => CastStmt::Break,
