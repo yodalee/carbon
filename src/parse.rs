@@ -81,6 +81,20 @@ fn build_statement(pair: Pair<Rule>) -> CastStmt {
             let docond = climb(inner.next().unwrap());
             CastStmt::new_do(docond, docode)
         }
+        Rule::for_stat => {
+            let build_opt_expr = |pair: Pair<Rule>| -> Option<CastStmt> {
+                match pair.as_rule() {
+                    Rule::expression => Some(climb(pair)),
+                    _ => None,
+                }
+            };
+            let mut inner = pair.into_inner();
+            let forInit = build_opt_expr(inner.next().unwrap());
+            let forCond = build_opt_expr(inner.next().unwrap());
+            let forIter = build_opt_expr(inner.next().unwrap());
+            let forCode = build_statement(inner.next().unwrap());
+            CastStmt::new_for(forInit, forCond, forIter, forCode)
+        }
         Rule::return_stat => {
             let expr = Box::new(match pair.into_inner().next() {
                 Some(expr) => Some(climb(expr)),

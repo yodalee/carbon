@@ -11,6 +11,7 @@ lparen   = _{ "(" }
 rparen   = _{ ")" }
 lbrace   = _{ "{" | "<%" }
 rbrace   = _{ "}" | "%>" }
+placeholder = { "" }
 
 op_add         = { "+" }
 op_sub         = { "-" }
@@ -102,7 +103,10 @@ selection_stat  = _{ if_stat | switch_stat }
 
 while_stat      = { "while" ~ lparen ~ expression ~ rparen ~ statement }
 do_stat         = { "do" ~ statement ~ "while" ~ lparen ~ expression ~ rparen ~ ";" }
-iteration_stat  = _{ while_stat | do_stat }
+for_stat        = { "for" ~ lparen ~ (expression | placeholder) ~ ";" ~
+                                     (expression | placeholder) ~ ";" ~
+                                     (expression | placeholder) ~ rparen ~ statement }
+iteration_stat  = _{ while_stat | do_stat | for_stat }
 
 return_stat     = { "return" ~ expression? ~ ";"  }
 break_stat      = { "break" ~ ";" }
