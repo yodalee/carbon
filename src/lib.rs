@@ -6,8 +6,8 @@ extern crate pest_derive;
 extern crate lazy_static;
 
 #[macro_use]
-pub mod helper;
+mod helper;
 pub mod parse;
-pub mod grammar;
-pub mod ast;
+mod grammar;
+mod ast;
 mod climb;
