@@ -1,5 +1,11 @@
 use std::collections::HashMap;
 
+#[derive(Debug)]
+pub enum Pos {
+    NoPos,
+    Pos { line_no: usize, col_no: usize, s: String }
+}
+
 #[derive(Debug,Hash,Eq,PartialEq)]
 pub enum CType {
     Void,
@@ -49,46 +55,53 @@ pub enum CastLiteral {
 pub enum CastStmt {
     Block(Vec<CastStmt>, Vec<CastDecl>),
     Compound(Vec<CastStmt>),
-    Identifier(String),
-    Literal(CastLiteral),
-    Expression(CastOperator, Box<CastStmt>, Box<CastStmt>),
-    If(Box<CastStmt>, Box<CastStmt>, Box<Option<CastStmt>>),
-    While { whileCond: Box<CastStmt>, whileCode: Box<CastStmt> },
-    Do    { doCode: Box<CastStmt>, doCond: Box<CastStmt> },
-    For { forInit: Box<Option<CastStmt>>,
+    Identifier(Pos, String),
+    Literal(Pos, CastLiteral),
+    Expression(Pos, CastOperator, Box<CastStmt>, Box<CastStmt>),
+    If(Pos, Box<CastStmt>, Box<CastStmt>, Box<Option<CastStmt>>),
+    While { pos: Pos, whileCond: Box<CastStmt>, whileCode: Box<CastStmt> },
+    Do    { pos: Pos, doCode: Box<CastStmt>, doCond: Box<CastStmt> },
+    For { pos: Pos,
+          forInit: Box<Option<CastStmt>>,
           forCond: Box<Option<CastStmt>>,
           forIter: Box<Option<CastStmt>>,
           forCode: Box<CastStmt> },
-    Call(Box<CastStmt>, Vec<CastStmt>),     // foo(a1, a2, ...)
-    ArrayRef(Box<CastStmt>, Box<CastStmt>), // ArrayRef (Identifier("a")) (Literal(IntLiteral(10)))
-    Return(Box<Option<CastStmt>>),
-    Break,
-    Continue,
+    Call(Pos, Box<CastStmt>, Vec<CastStmt>),     // foo(a1, a2, ...)
+    ArrayRef(Pos, Box<CastStmt>, Box<CastStmt>), // ArrayRef (Identifier("a")) (Literal(IntLiteral(10)))
+    Return(Pos, Box<Option<CastStmt>>),
+    Break(Pos),
+    Continue(Pos),
     None
 }
 
 impl CastStmt {
-    pub fn new_for(forInit: Option<CastStmt>,
+    pub fn new_for(pos: Pos,
+                   forInit: Option<CastStmt>,
                    forCond: Option<CastStmt>,
                    forIter: Option<CastStmt>,
                    forCode: CastStmt) -> CastStmt {
         CastStmt::For {
+            pos: pos,
             forInit: Box::new(forInit),
             forCond: Box::new(forCond),
             forIter: Box::new(forIter),
             forCode: Box::new(forCode)
         }
     }
-    pub fn new_while(whileCond: CastStmt,
+    pub fn new_while(pos: Pos,
+                     whileCond: CastStmt,
                      whileCode: CastStmt) -> CastStmt {
         CastStmt::While {
+            pos: pos,
             whileCond: Box::new(whileCond),
             whileCode: Box::new(whileCode)
         }
     }
-    pub fn new_do(doCode: CastStmt,
+    pub fn new_do(pos: Pos,
+                  doCode: CastStmt,
                   doCond: CastStmt) -> CastStmt {
         CastStmt::Do {
+            pos: pos,
             doCode: Box::new(doCode),
             doCond: Box::new(doCond)
         }

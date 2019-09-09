@@ -61,6 +61,7 @@ impl ASTBuilder {
 
     fn build_statement(&mut self, pair: Pair<Rule>) -> CastStmt {
         let pair = pair.into_inner().next().unwrap();
+        let pos = self.derive_pos(&pair);
         match pair.as_rule() {
             Rule::compound_stat => self.build_compound_statement(pair),
             Rule::if_stat => {
@@ -71,19 +72,19 @@ impl ASTBuilder {
                     Some(stmt) => Some(self.build_statement(stmt)),
                     None => None,
                 });
-                CastStmt::If(condition, ifcode, elsecode)
+                CastStmt::If(pos, condition, ifcode, elsecode)
             }
             Rule::while_stat => {
                 let mut inner = pair.into_inner();
                 let whilecond = self.climb(inner.next().unwrap());
                 let whilecode = self.build_statement(inner.next().unwrap());
-                CastStmt::new_while(whilecond, whilecode)
+                CastStmt::new_while(pos, whilecond, whilecode)
             }
             Rule::do_stat => {
                 let mut inner = pair.into_inner();
                 let docode = self.build_statement(inner.next().unwrap());
                 let docond = self.climb(inner.next().unwrap());
-                CastStmt::new_do(docond, docode)
+                CastStmt::new_do(pos, docond, docode)
             }
             Rule::for_stat => {
                 let build_opt_expr = |pair: Pair<Rule>| -> Option<CastStmt> {
@@ -97,17 +98,17 @@ impl ASTBuilder {
                 let forCond = build_opt_expr(inner.next().unwrap());
                 let forIter = build_opt_expr(inner.next().unwrap());
                 let forCode = self.build_statement(inner.next().unwrap());
-                CastStmt::new_for(forInit, forCond, forIter, forCode)
+                CastStmt::new_for(pos, forInit, forCond, forIter, forCode)
             }
             Rule::return_stat => {
                 let expr = Box::new(match pair.into_inner().next() {
                     Some(expr) => Some(self.climb(expr)),
                     None => None
                 });
-                CastStmt::Return(expr)
+                CastStmt::Return(pos, expr)
             }
-            Rule::break_stat => CastStmt::Break,
-            Rule::cont_stat => CastStmt::Continue,
+            Rule::break_stat => CastStmt::Break(pos),
+            Rule::cont_stat => CastStmt::Continue(pos),
             Rule::expression_stat => {
                 match pair.into_inner().next() {
                     Some(expr) => self.climb(expr),
@@ -150,12 +151,13 @@ impl ASTBuilder {
 
     fn helper_fold_postfix(&self, primary: CastStmt, pair: Pair<Rule>) -> CastStmt {
         let pair = pair.into_inner().next().unwrap();
+        let pos  = self.derive_pos(&pair);
         match pair.as_rule() {
             Rule::postfix_array => {
                 let expr = pair.into_inner().next().unwrap();
-                CastStmt::ArrayRef(Box::new(primary), Box::new(self.climb(expr)))
+                CastStmt::ArrayRef(pos, Box::new(primary), Box::new(self.climb(expr)))
             }
-            Rule::postfix_call => CastStmt::Call(Box::new(primary), Vec::new()),
+            Rule::postfix_call => CastStmt::Call(pos, Box::new(primary), Vec::new()),
             _ => parse_fail!(pair),
         }
     }
@@ -168,10 +170,11 @@ impl ASTBuilder {
 
     fn build_primary_expr(&self, pair: Pair<Rule>) -> CastStmt {
         let pair = pair.into_inner().next().unwrap();
+        let pos  = self.derive_pos(&pair);
         match pair.as_rule() {
-            Rule::identifier => CastStmt::Identifier(pair.as_str().to_string()),
-            Rule::constant   => CastStmt::Literal(self.build_constant(pair)),
-            Rule::string_lit => CastStmt::Literal(self.build_constant(pair)),
+            Rule::identifier => CastStmt::Identifier(pos, pair.as_str().to_string()),
+            Rule::constant   => CastStmt::Literal(pos, self.build_constant(pair)),
+            Rule::string_lit => CastStmt::Literal(pos, self.build_constant(pair)),
             Rule::expression => self.climb(pair),
             _ => parse_fail!(pair),
         }
@@ -197,6 +200,15 @@ impl ASTBuilder {
         let s = pair.as_str();
         CastLiteral::IntLiteral(u64::from_str_radix(s, radix)
                                     .expect(&format!("Parse integere failed on string {} with radix {}", s, radix)))
+    }
+
+    pub fn derive_pos(&self, pair: &Pair<Rule>) -> Pos {
+        let (line_no, col_no) = pair.as_span().start_pos().line_col();
+        Pos::Pos {
+            line_no : line_no,
+            col_no : col_no,
+            s : pair.as_str().to_string()
+        }
     }
 }
 
