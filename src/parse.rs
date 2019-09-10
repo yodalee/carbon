@@ -212,27 +212,3 @@ impl ASTBuilder {
     }
 }
 
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // test rule can match content exactly
-    fn can_parse(rule: Rule, content: &str) -> bool {
-        match CParser::parse(rule, content) {
-            Err(_) => false,
-            Ok(mut pair) => {
-                let parse_str = pair.next().unwrap().as_str();
-                println!("{:?} match {}", rule, parse_str);
-                parse_str == content
-            },
-        }
-    }
-
-    #[test]
-    fn test_identifier() {
-        assert!(can_parse(Rule::identifier, "a123_"));
-        assert!(!can_parse(Rule::identifier, "123"));
-        assert!(can_parse(Rule::identifier, "_039"));
-    }
-}
