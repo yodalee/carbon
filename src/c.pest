@@ -119,7 +119,9 @@ block = { (statement | declaration)+ }
 
 // declaration
 
-declaration = { type_decl ~ identifier ~ ("=" ~ expression)? ~ ";" }
+initializer     = _{ assignment_expr }
+init_declarator = { identifier ~ ( "=" ~ initializer )? }
+declaration     = { type_decl ~ (init_declarator ~ ("," ~ init_declarator)* )? ~ ";" }
 
 type_decl = { "int" | "float" } // TODO, generic type declaration
 param_list = { lparen ~ rparen } // TODO, with content

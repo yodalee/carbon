@@ -6,7 +6,7 @@ pub enum Pos {
     Pos { line_no: usize, col_no: usize, s: String }
 }
 
-#[derive(Debug,Hash,Eq,PartialEq)]
+#[derive(Debug,Hash,Eq,PartialEq,Clone)]
 pub enum CType {
     Void,
     Char,

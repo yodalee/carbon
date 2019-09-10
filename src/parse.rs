@@ -130,7 +130,7 @@ impl ASTBuilder {
         let mut stmts = vec![];
         for pair in pair.into_inner() {
             match pair.as_rule() {
-                Rule::declaration => decls.push(self.build_declaration(pair)),
+                Rule::declaration => decls.append(&mut self.build_declaration(pair)),
                 Rule::statement   => stmts.push(self.build_statement(pair)),
                 _ => parse_fail!(pair),
             }
@@ -138,15 +138,20 @@ impl ASTBuilder {
         CastStmt::Block(stmts, decls)
     }
 
-    fn build_declaration(&self, pair: Pair<Rule>) -> CastDecl {
+    fn helper_create_vardecl(&self, typ: CType, pair: Pair<Rule>) -> CastDecl {
         let mut inner = pair.into_inner();
-        let typ  = self.build_type(inner.next().unwrap());
         let id   = inner.next().unwrap().as_str();
         let expr = match inner.next() {
             Some(expr) => Some(self.climb(expr)),
             None => None,
         };
         CastDecl::VarDecl(id.to_string(), typ, expr)
+    }
+    fn build_declaration(&self, pair: Pair<Rule>) -> Vec<CastDecl> {
+        let mut inner = pair.into_inner();
+        let typ  = self.build_type(inner.next().unwrap());
+        inner.map(|pair| self.helper_create_vardecl(typ.clone(), pair))
+             .collect()
     }
 
     fn helper_fold_postfix(&self, primary: CastStmt, pair: Pair<Rule>) -> CastStmt {
