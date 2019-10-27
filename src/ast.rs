@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 #[derive(Debug)]
 pub enum Pos {
     NoPos,
@@ -23,6 +21,7 @@ pub enum CType {
     Float,
     Double,
     Array(Box<CType>, u32),
+    Func(Box<CType>, Vec<CType>), // return type, param type
     Custom(String)
 }
 
@@ -116,22 +115,22 @@ impl CastStmt {
 
 #[derive(Debug)]
 pub struct FuncDecl {
+    FuncType: CType,
     FuncName: String,
-    FuncArgs: HashMap<CType, String>,
+    FuncArgs: Vec<String>,
     FuncCode: CastStmt,
-    FuncRetType: CType
 }
 
 impl FuncDecl {
-    pub fn new(FuncName: &str,
-           FuncArgs: HashMap<CType, String>,
-           FuncCode: CastStmt,
-           FuncRetType: CType) -> FuncDecl {
+    pub fn new(FuncType: CType,
+               FuncName: String,
+               FuncArgs: Vec<String>,
+               FuncCode: CastStmt) -> FuncDecl {
         FuncDecl {
+            FuncType: FuncType,
             FuncName: FuncName.to_string(),
             FuncArgs: FuncArgs,
             FuncCode: FuncCode,
-            FuncRetType: FuncRetType
         }
     }
 }

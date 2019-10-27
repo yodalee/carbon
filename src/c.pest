@@ -119,16 +119,24 @@ block = { (statement | declaration)+ }
 
 // declaration
 
-direct_decl_tail = { "[" ~ assignment_expr ~ "]" }
+param_decl = { type_decl ~ declarator }
+param_list = _{ param_decl ~ ("," ~ param_decl)* }
+
+direct_decl_array = { lbracket ~ assignment_expr ~ rbracket }
+direct_decl_func  = { lparen ~ param_list? ~ rparen }
+direct_decl_tail = { direct_decl_array }
 direct_decl      = _{ identifier }
+
+func_declarator  = { direct_decl ~ direct_decl_func  }
 declarator       = { direct_decl ~ direct_decl_tail* }
+
 initializer      = _{ assignment_expr }
 init_declarator  = { declarator ~ ( "=" ~ initializer )? }
 declaration      = { type_decl ~ (init_declarator ~ ("," ~ init_declarator)* )? ~ ";" }
 
 type_decl = { "int" | "float" } // TODO, generic type declaration
-param_list = { lparen ~ rparen } // TODO, with content
-function_decl = { type_decl ~ identifier ~ param_list ~ compound_stat }
+
+function_decl = { type_decl ~ func_declarator ~ compound_stat }
 
 // C program
 

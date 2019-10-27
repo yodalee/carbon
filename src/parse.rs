@@ -9,7 +9,6 @@ use super::ast::*;
 
 use std::fs::File;
 use std::io::prelude::*;
-use std::collections::HashMap;
 
 pub struct ASTBuilder {
 }
@@ -43,11 +42,9 @@ impl ASTBuilder {
     fn build_function(&mut self, pair: Pair<Rule>) -> FuncDecl {
         let mut inner = pair.into_inner();
         let rettype = self.build_type(inner.next().unwrap());
-        let name = inner.next().unwrap().as_str();
-        inner.next().unwrap();
-        let args = HashMap::new();
+        let (typ, name, params) = self.build_func_declarator(rettype, inner.next().unwrap());
         let body = self.build_compound_statement(inner.next().unwrap());
-        FuncDecl::new(name, args, body, rettype)
+        FuncDecl::new(typ, name, params, body)
     }
 
     fn build_type(&self, pair: Pair<Rule>) -> CType {
@@ -140,8 +137,46 @@ impl ASTBuilder {
 
     fn build_decl_tail(&self, basetype: CType, pair: Pair<Rule>) -> CType {
         let pair = pair.into_inner().next().unwrap();
-        let constant = u32::from_str_radix(pair.as_str(), 10).unwrap();
-        CType::Array(Box::new(basetype), constant)
+        match pair.as_rule() {
+            Rule::direct_decl_array => {
+                let constant = u32::from_str_radix(
+                    pair.into_inner().next().unwrap().as_str(), 10).unwrap();
+                CType::Array(Box::new(basetype), constant)
+            }
+            _ => parse_fail!(pair),
+        }
+    }
+
+    fn build_params(&self, pair: Pair<Rule>) -> (CType, String) {
+        let mut inner = pair.into_inner();
+        let basetype = self.build_type(inner.next().unwrap());
+        self.build_declarator(basetype, inner.next().unwrap())
+    }
+
+    fn build_func_params(&self, rettype: CType, pair: Pair<Rule>) -> (CType, Vec<String>) {
+        let inner = pair.into_inner();
+        let mut types = vec!();
+        let mut names = vec!();
+        for pair in inner {
+            let p = self.build_params(pair);
+            types.push(p.0);
+            names.push(p.1);
+        }
+        (CType::Func(Box::new(rettype), types), names)
+    }
+
+    //FIXME: This one is duplicated with build_declarator
+    fn build_func_declarator(&self, rettype: CType, pair: Pair<Rule>) -> (CType, String, Vec<String>) {
+        let mut inner = pair.into_inner();
+
+        let directdecl = inner.next().unwrap();
+        let name = match directdecl.as_rule() {
+            Rule::identifier => directdecl.as_str().to_string(),
+            _ => parse_fail!(directdecl),
+        };
+        let (t, params) = self.build_func_params(rettype, inner.next().unwrap());
+
+        (t, name, params)
     }
 
     fn build_declarator(&self, basetype: CType, pair: Pair<Rule>) -> (CType, String) {
