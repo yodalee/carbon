@@ -7,16 +7,22 @@ pub enum Pos {
 }
 
 #[derive(Debug,Hash,Eq,PartialEq,Clone)]
-pub enum CType {
-    Void,
-    Char,
-    Short,
-    Int,
-    Long,
-    Float,
-    Double,
+pub enum Sign {
     Signed,
     Unsigned,
+}
+
+#[derive(Debug,Hash,Eq,PartialEq,Clone)]
+pub enum CType {
+    Void,
+    Char(Sign),
+    Short(Sign),
+    Int(Sign),
+    Long(Sign),
+    LongLong(Sign),
+    Float,
+    Double,
+    Array(Box<CType>, u32),
     Custom(String)
 }
 

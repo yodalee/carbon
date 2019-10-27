@@ -119,8 +119,11 @@ block = { (statement | declaration)+ }
 
 // declaration
 
+decl_postfix    = { "[" ~ assignment_expr ~ "]" | param_list }
+direct_decl     = { (identifier | ( "(" ~ declarator ~ ")" )) }
+declarator      = _{ direct_decl }
 initializer     = _{ assignment_expr }
-init_declarator = { identifier ~ ( "=" ~ initializer )? }
+init_declarator = { declarator ~ ( "=" ~ initializer )? }
 declaration     = { type_decl ~ (init_declarator ~ ("," ~ init_declarator)* )? ~ ";" }
 
 type_decl = { "int" | "float" } // TODO, generic type declaration

@@ -53,7 +53,7 @@ impl ASTBuilder {
     fn build_type(&self, pair: Pair<Rule>) -> CType {
         let typename = pair.as_str();
         match typename.as_ref() {
-            "int" => CType::Int,
+            "int" => CType::Int(Sign::Signed),
             "float" => CType::Float,
             &_ => panic!(format!("Unknown Type {}", typename)),
         }
@@ -138,19 +138,29 @@ impl ASTBuilder {
         CastStmt::Block(stmts, decls)
     }
 
-    fn helper_create_vardecl(&self, typ: CType, pair: Pair<Rule>) -> CastDecl {
+    fn build_declarator(&self, basetype: CType, pair: Pair<Rule>) -> (CType, String) {
+        let pair = pair.into_inner().next().unwrap();
+        match pair.as_rule() {
+            Rule::identifier => (basetype, pair.as_str().to_string()),
+            Rule::declarator => self.build_declarator(basetype, pair),
+            _ => parse_fail!(pair),
+        }
+    }
+
+    fn helper_build_init(&self, basetype: CType, pair: Pair<Rule>) -> CastDecl {
         let mut inner = pair.into_inner();
-        let id   = inner.next().unwrap().as_str();
+        let (typ,name)  = self.build_declarator(basetype, inner.next().unwrap());
         let expr = match inner.next() {
             Some(expr) => Some(self.climb(expr)),
             None => None,
         };
-        CastDecl::VarDecl(id.to_string(), typ, expr)
+        CastDecl::VarDecl(name, typ, expr)
     }
+
     fn build_declaration(&self, pair: Pair<Rule>) -> Vec<CastDecl> {
         let mut inner = pair.into_inner();
         let typ  = self.build_type(inner.next().unwrap());
-        inner.map(|pair| self.helper_create_vardecl(typ.clone(), pair))
+        inner.map(|pair| self.helper_build_init(typ.clone(), pair))
              .collect()
     }
 
