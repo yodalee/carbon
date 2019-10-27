@@ -139,9 +139,8 @@ impl ASTBuilder {
         let pair = pair.into_inner().next().unwrap();
         match pair.as_rule() {
             Rule::direct_decl_array => {
-                let constant = u32::from_str_radix(
-                    pair.into_inner().next().unwrap().as_str(), 10).unwrap();
-                CType::Array(Box::new(basetype), constant)
+                let expr = pair.into_inner().next().unwrap();
+                CType::Array(Box::new(basetype), Box::new(self.climb(expr)))
             }
             _ => parse_fail!(pair),
         }

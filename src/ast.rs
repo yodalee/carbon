@@ -1,16 +1,16 @@
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum Pos {
     NoPos,
     Pos { line_no: usize, col_no: usize, s: String }
 }
 
-#[derive(Debug,Hash,Eq,PartialEq,Clone)]
+#[derive(Debug,Clone)]
 pub enum Sign {
     Signed,
     Unsigned,
 }
 
-#[derive(Debug,Hash,Eq,PartialEq,Clone)]
+#[derive(Debug,Clone)]
 pub enum CType {
     Void,
     Char(Sign),
@@ -20,7 +20,7 @@ pub enum CType {
     LongLong(Sign),
     Float,
     Double,
-    Array(Box<CType>, u32),
+    Array(Box<CType>, Box<CastStmt>),
     Func(Box<CType>, Vec<CType>), // return type, param type
     Custom(String)
 }
@@ -31,13 +31,13 @@ pub enum CastTop {
     FuncDeclList(Vec<FuncDecl>)
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum CastDecl {
     TypeDecl(String, CType),
     VarDecl(String, CType, Option<CastStmt>)
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum CastOperator {
     COMMA,
     ASSIGN, ASSIGNADD, ASSIGNSUB, ASSIGNMUL, ASSIGNDIV,
@@ -49,14 +49,14 @@ pub enum CastOperator {
     AND, OR, BAND, BOR, BXOR
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum CastLiteral {
     IntLiteral(u64),
     FloatLiteral(f64),
     StringLiteral(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum CastStmt {
     Block(Vec<CastStmt>, Vec<CastDecl>),
     Compound(Vec<CastStmt>),
