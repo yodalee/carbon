@@ -138,13 +138,22 @@ impl ASTBuilder {
         CastStmt::Block(stmts, decls)
     }
 
-    fn build_declarator(&self, basetype: CType, pair: Pair<Rule>) -> (CType, String) {
+    fn build_decl_tail(&self, basetype: CType, pair: Pair<Rule>) -> CType {
         let pair = pair.into_inner().next().unwrap();
-        match pair.as_rule() {
-            Rule::identifier => (basetype, pair.as_str().to_string()),
-            Rule::declarator => self.build_declarator(basetype, pair),
-            _ => parse_fail!(pair),
-        }
+        let constant = u32::from_str_radix(pair.as_str(), 10).unwrap();
+        CType::Array(Box::new(basetype), constant)
+    }
+
+    fn build_declarator(&self, basetype: CType, pair: Pair<Rule>) -> (CType, String) {
+        let mut inner = pair.into_inner();
+
+        let directdecl = inner.next().unwrap();
+        let name = match directdecl.as_rule() {
+            Rule::identifier => directdecl.as_str().to_string(),
+            _ => parse_fail!(directdecl),
+        };
+        let t = inner.fold(basetype, |basetype, pair| self.build_decl_tail(basetype, pair));
+        (t, name)
     }
 
     fn helper_build_init(&self, basetype: CType, pair: Pair<Rule>) -> CastDecl {

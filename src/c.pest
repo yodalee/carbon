@@ -119,12 +119,12 @@ block = { (statement | declaration)+ }
 
 // declaration
 
-decl_postfix    = { "[" ~ assignment_expr ~ "]" | param_list }
-direct_decl     = { (identifier | ( "(" ~ declarator ~ ")" )) }
-declarator      = _{ direct_decl }
-initializer     = _{ assignment_expr }
-init_declarator = { declarator ~ ( "=" ~ initializer )? }
-declaration     = { type_decl ~ (init_declarator ~ ("," ~ init_declarator)* )? ~ ";" }
+direct_decl_tail = { "[" ~ assignment_expr ~ "]" }
+direct_decl      = _{ identifier }
+declarator       = { direct_decl ~ direct_decl_tail* }
+initializer      = _{ assignment_expr }
+init_declarator  = { declarator ~ ( "=" ~ initializer )? }
+declaration      = { type_decl ~ (init_declarator ~ ("," ~ init_declarator)* )? ~ ";" }
 
 type_decl = { "int" | "float" } // TODO, generic type declaration
 param_list = { lparen ~ rparen } // TODO, with content
