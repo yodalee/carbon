@@ -5,7 +5,8 @@ use pest::iterators::{Pair};
 
 use super::helper::{iterate_rules};
 use super::grammar::{CParser, Rule};
-use super::ast::*;
+use super::ast::cast::*;
+use super::ast::ctype::{CType, Sign};
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -91,11 +92,11 @@ impl ASTBuilder {
                     }
                 };
                 let mut inner = pair.into_inner();
-                let forInit = build_opt_expr(inner.next().unwrap());
-                let forCond = build_opt_expr(inner.next().unwrap());
-                let forIter = build_opt_expr(inner.next().unwrap());
-                let forCode = self.build_statement(inner.next().unwrap());
-                CastStmt::new_for(pos, forInit, forCond, forIter, forCode)
+                let for_init = build_opt_expr(inner.next().unwrap());
+                let for_cond = build_opt_expr(inner.next().unwrap());
+                let for_iter = build_opt_expr(inner.next().unwrap());
+                let for_code = self.build_statement(inner.next().unwrap());
+                CastStmt::new_for(pos, for_init, for_cond, for_iter, for_code)
             }
             Rule::return_stat => {
                 let expr = Box::new(match pair.into_inner().next() {

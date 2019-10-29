@@ -2,7 +2,7 @@ use pest::prec_climber::{Assoc, PrecClimber, Operator};
 use pest::iterators::{Pair};
 use super::grammar::{Rule};
 
-use super::ast::*;
+use super::ast::cast::*;
 use super::parse::ASTBuilder;
 
 lazy_static! [
