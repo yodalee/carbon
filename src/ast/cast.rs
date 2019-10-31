@@ -100,10 +100,10 @@ impl CastStmt {
 
 #[derive(Debug)]
 pub struct FuncDecl {
-    fun_type: CType,
-    fun_name: String,
-    fun_args: Vec<String>,
-    fun_code: CastStmt,
+    pub fun_type: CType,
+    pub fun_name: String,
+    pub fun_args: Vec<String>,
+    pub fun_code: CastStmt,
 }
 
 impl FuncDecl {

@@ -19,7 +19,7 @@ pub fn parse_program_file(path: &str) {
     let mut content = String::new();
     f.read_to_string(&mut content).expect(&format!("Error in reading file {}", path));
     let ast = parse_program_text(&content);
-    println!("{:?}", ast);
+    println!("{}", ast);
 }
 
 fn parse_program_text(content: &str) -> CastTop {
